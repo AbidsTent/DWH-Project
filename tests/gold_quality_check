@@ -1,0 +1,24 @@
+-- Duplicate customer surrogate keys
+select customer_key, count(*)
+from gold.dim_customers 
+group by customer_key 
+HAVING count(*)>1;
+
+-- Sales with missing customer
+SELECT *
+FROM gold.fact_sales f
+LEFT JOIN gold.dim_customers c
+    ON f.customer_key = c.customer_key
+WHERE c.customer_key IS NULL;
+
+-- Sales with missing product
+SELECT *
+FROM gold.fact_sales f
+LEFT JOIN gold.dim_products p
+    ON f.product_key = p.product_key
+WHERE p.product_key IS NULL;
+
+-- Check sales calculation
+SELECT *
+FROM gold.fact_sales
+WHERE total <> quantity * price;
