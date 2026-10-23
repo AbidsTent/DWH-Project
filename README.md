@@ -47,7 +47,7 @@ The project focuses on:
 
 The project uses three logical layers.
 
-![Data Warehouse Architecture](docs/Architecture diagram.drawio (1).svg)
+![Data Warehouse Architecture](docs/Architecture diagram.svg)
 
 The architecture shows the full flow of data from the CRM and ERP source files through the Bronze, Silver, and Gold layers before the final data is used for analytics and reporting.
 
@@ -131,8 +131,6 @@ For gender information, CRM is treated as the primary source and ERP is used as 
 # Data Model
 
 The Gold layer follows a basic star-schema design.
-
-![Gold Layer Star Schema](docs/star_schema.svg)
 
 The Gold layer uses a simple star schema where `fact_sales` represents sales transactions and connects to the customer and product dimensions through surrogate keys.
 
