@@ -47,6 +47,10 @@ The project focuses on:
 
 The project uses three logical layers.
 
+![Data Warehouse Architecture](docs/Architecture diagram.drawio (1).svg)
+
+The architecture shows the full flow of data from the CRM and ERP source files through the Bronze, Silver, and Gold layers before the final data is used for analytics and reporting.
+
 ## Bronze Layer
 
 The Bronze layer stores the raw data coming from the source systems.
@@ -128,7 +132,11 @@ For gender information, CRM is treated as the primary source and ERP is used as 
 
 The Gold layer follows a basic star-schema design.
 
-dim_customer <----------> fact_sales <------------> dim_products
+![Gold Layer Star Schema](docs/star_schema.svg)
+
+The Gold layer uses a simple star schema where `fact_sales` represents sales transactions and connects to the customer and product dimensions through surrogate keys.
+
+Each row in `fact_sales` represents a sales transaction associated with a customer and product, allowing the warehouse to support customer, product, and sales-performance analysis.
 
 ### dim_customers
 
@@ -225,25 +233,78 @@ Gold Views
 
 This project currently uses a **full-refresh strategy** rather than incremental processing.
 
+# Analytics and Business Questions
 
+After the data is cleaned, integrated, and modeled in the Gold layer, the warehouse is used to answer business questions through SQL-based analysis.
+
+The analytics are divided into three main areas:
+
+### Sales Analysis
+
+The sales analysis focuses on overall business performance and trends, including:
+
+- Total revenue
+- Total orders
+- Total units sold
+- Average order value
+- Yearly revenue trends
+- Monthly revenue trends
+- Year-over-year revenue growth
+
+The year-over-year analysis uses SQL window functions such as `LAG()` to compare revenue with the previous year.
+
+### Customer Analysis
+
+Customer analysis is used to better understand customer behaviour and value.
+
+Current analysis includes:
+
+- Highest-value customers by revenue
+- Customer order counts
+- Revenue by country
+- Revenue by gender
+- Customer segmentation based on total spending
+
+Customers are grouped into High, Medium, and Low-value segments based on their total purchase amount.
+
+### Product Analysis
+
+Product analysis focuses on product and category performance.
+
+Current analysis includes:
+
+- Top products by revenue
+- Units sold by product
+- Revenue by product category
+- Order volume by category
+- Product rankings within each category
+
+`DENSE_RANK()` is used to rank products based on revenue within their respective product categories.
+
+The analytical SQL files can be found under:
+
+```text
+analytics/
+├── sales_analysis.sql
+├── customer_analysis.sql
+└── product_analysis.sql
+```
 # Data Quality Checks
 
-The project contains SQL-based quality checks for the Silver layer.
+The project contains SQL-based quality checks across both the Silver and Gold layers.
 
-Current tests include checks for:
+Silver-layer checks focus on data cleansing, standardization, validity, and consistency before the data reaches the analytical model.
 
-- Duplicate IDs
-- NULL keys
-- Invalid dates
-- Unwanted spaces
-- Negative or missing product costs
-- Invalid sales values
-- Invalid sales dates
-- Incorrect price and quantity combinations
-- Data standardization issues
-- Referential consistency between datasets
+Gold-layer checks validate the final dimensional model and include:
+
+- Duplicate surrogate key checks
+- Missing customer references in the fact table
+- Missing product references in the fact table
+- Sales amount validation
+- Referential consistency between fact and dimension views
 
 ---
+
 
 # Error Handling and Monitoring
 
@@ -263,31 +324,43 @@ A future improvement for this project would be adding a dedicated ETL audit tabl
 # Repository Structure
 
 ```text
+```text
 DWH-Project/
+│
+├── analytics/
+│   ├── customer_analysis.sql
+│   ├── product_analysis.sql
+│   └── sales_analysis.sql
 │
 ├── datasets/
 │   ├── source_crm/
 │   └── source_erp/
+│
+├── docs/
+│   └── Architecture diagram.drawio (1).svg
+│   
 │
 ├── scripts/
 │   ├── init_database.sql
 │   │
 │   ├── bronze/
 │   │   ├── ddl_bronze.sql
-│   │   └── ddl_load_data.sql
+│   │   └── proc_load_bronze.sql
 │   │
 │   ├── silver/
 │   │   ├── ddl_silver.sql
-│   │   └── proc_silver_data
+│   │   └── proc_load_silver.sql
 │   │
 │   └── gold/
-│       └── gold_ddl
+│       └── ddl_gold.sql
 │
 ├── tests/
-│   └── quality_check_silver
+│   ├── quality_check_silver.sql
+│   └── quality_check_gold.sql
 │
 ├── LICENSE
 └── README.md
+```
 ```
 
 Some filenames may be cleaned up in later versions as the project continues to improve.
@@ -386,7 +459,29 @@ scripts/gold/gold_ddl
 ```
 
 This creates the analytical dimension and fact views.
+### 8. Run Gold quality checks
 
+Run:
+
+```text
+tests/quality_check_gold.sql
+```
+
+These checks validate the final analytical model and help confirm that fact and dimension relationships are consistent.
+
+---
+
+### 9. Run analytical queries
+
+The analytics scripts can be executed after the Gold layer has been created and validated.
+
+```text
+analytics/sales_analysis.sql
+analytics/customer_analysis.sql
+analytics/product_analysis.sql
+```
+
+These scripts generate business-focused insights from the completed warehouse.
 ---
 
 # Skills Practiced
@@ -411,6 +506,16 @@ This project helped me practice and better understand:
 - Batch Processing
 - Full-Load Pipelines
 - Git and GitHub
+- - Exploratory Business Analysis
+- KPI Analysis
+- Trend Analysis
+- Customer Segmentation
+- Year-over-Year Analysis
+- Analytical SQL
+- Common Table Expressions (CTEs)
+- Ranking Functions
+- `LAG()` and `DENSE_RANK()`
+- Business-Focused Data Modeling
 
 More importantly, the project helped me understand why data is separated into different layers and how raw operational data can gradually be turned into something useful for reporting and analytics.
 
@@ -438,14 +543,14 @@ These are areas I plan to explore as I continue learning data engineering.
 
 # Planned Improvements
 
-Some improvements I plan to add include:
+Possible future improvements include:
 
-- ETL audit logging
-- Improved project documentation
-- Incremental loading
-- Additional analytical queries
-- Power BI reporting
-- Better pipeline monitoring
+- Power BI dashboard connected to the Gold layer
+- Incremental data loading
+- Slowly Changing Dimension handling
+- Pipeline orchestration and scheduling
+- Cloud-based data warehousing
+- Automated data-quality testing
 
 ---
 
