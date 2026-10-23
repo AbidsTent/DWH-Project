@@ -45,11 +45,11 @@ The project focuses on:
 
 # Data Architecture
 
-The project uses three logical layers.
+The project uses three logical layers. 
 
-![Data Warehouse Architecture](docs/Architecture diagram.svg)
+The architecture is located in docs/Architecture diagram.svg
 
-The architecture shows the full flow of data from the CRM and ERP source files through the Bronze, Silver, and Gold layers before the final data is used for analytics and reporting.
+The architecture shows the full data flow from the CRM and ERP source files through the Bronze, Silver, and Gold layers, before the final data is used for analytics and reporting.
 
 ## Bronze Layer
 
